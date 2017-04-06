@@ -1,26 +1,29 @@
 Hive and R
-We assume here that R is installed under Unix. Our goal is to locally install a library in my profile under unix and apply it to each record of a Hive table. Here is how you do:
-userpemah1$mkdir changepoint
-userpemah1$cd changepoint
-userpemah1$wget http://cran.wal-mart.com/R/src/contrib/changepoint_2.1.1.tar.gz
-userpemah1$vim ~/.profile #add this line to .profile:
+We assume here that R is installed on Unix. Our goal is to locally install a library in my profile under unix and apply it to each record of a Hive table. 
+Here is how you do:
+
+$mkdir changepoint
+$cd changepoint
+$wget http://cran.xxx-mart.com/R/src/contrib/changepoint_2.1.1.tar.gz
+$vim ~/.profile #add this line to .profile:
 			export R_LIBS=/u/users/pemah1/R_libs
-userpemah1$R CMD INSTALL changepoint_2.1.1.tar.gz
-userpemah1$cd ~/R_libs (if not created, create this R_libs folder)
-uesrpemah1$tar -vczf changepoint.tar.gz changepoint
+$R CMD INSTALL changepoint_2.1.1.tar.gz
+$cd ~/R_libs (if not created, create this R_libs folder)
+$tar -vczf changepoint.tar.gz changepoint
+
+
 **************************************************
-the R algorithm which will be used in Hive query looks like the following. We call this file u.R
+Our R code/algorithm which will be used in Hive query looks like the following. We call this file u.R
+$vim u.R
 #!/usr/bin/env Rscript 
   
 # Mapper + Reducer for test R script 
 # See TRANSFORM in Hive manual for more information 
 # on how to use with R. 
-# library(ecp); 
+# library(ecp); #ecp is the name of the R library
 # local({ 
 #         options(repos = NULL) 
-#         r = c(CRAN = "http://cran.wal-mart.com/R
- 
-") 
+#         r = c(CRAN = "http://cran.xxx-mart.com/R") 
 #         options(repos = r) 
 # }) 
 system('rm -fr .rlib') 
@@ -58,7 +61,7 @@ A Hive hql file then calls as u.R follow:
 
 
 add jar walmart_gcia_tcs_hiveutils.jar;
-create temporary function arraytostring as ‘com.walmart.hive.util.ArrayToString’;
+create temporary function arraytostring as ‘com.xxxmart.hive.util.ArrayToString’;
 add file u.R;
 add file change point_1.2.3.tar.gz;
 
