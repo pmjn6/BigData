@@ -1,0 +1,83 @@
+Hive and R
+We assume here that R is installed under Unix. Our goal is to locally install a library in my profile under unix and apply it to each record of a Hive table. Here is how you do:
+userpemah1$mkdir changepoint
+userpemah1$cd changepoint
+userpemah1$wget http://cran.wal-mart.com/R/src/contrib/changepoint_2.1.1.tar.gz
+userpemah1$vim ~/.profile #add this line to .profile:
+			export R_LIBS=/u/users/pemah1/R_libs
+userpemah1$R CMD INSTALL changepoint_2.1.1.tar.gz
+userpemah1$cd ~/R_libs (if not created, create this R_libs folder)
+uesrpemah1$tar -vczf changepoint.tar.gz changepoint
+**************************************************
+the R algorithm which will be used in Hive query looks like the following. We call this file u.R
+#!/usr/bin/env Rscript 
+  
+# Mapper + Reducer for test R script 
+# See TRANSFORM in Hive manual for more information 
+# on how to use with R. 
+# library(ecp); 
+# local({ 
+#         options(repos = NULL) 
+#         r = c(CRAN = "http://cran.wal-mart.com/R
+ 
+") 
+#         options(repos = r) 
+# }) 
+system('rm -fr .rlib') 
+system('mkdir .rlib') 
+system('tar -C .rlib -xf ecp_1.6.2.tar.gz') 
+library("ecp",lib.loc=paste(getwd(),".rlib",sep='/')) 
+  
+input <- file("stdin", "r") 
+  
+while (length(line <- readLines(input, n=1, warn=FALSE)) > 0) { 
+    
+    if (nchar(line) == 0) break 
+  
+    # First field is the key, second is the value 
+    fields <- unlist(strsplit(line, "\t")) 
+  
+    # Split numbers from second field. 
+    cost <- as.numeric(unlist(strsplit(fields[2], ","))) 
+  
+    # Now do some data analysis 
+    # Get mean and variance and return as fields 
+    m <- round(mean(cost),2) 
+    v <- round(var(cost),2) 
+    output <- e.divisive(as.matrix(cost), alpha=1) 
+    breaks <- paste(round(output$estimates,2), collapse="|") 
+    costout <- paste(round(cost,2), collapse="|") 
+    # Return the fields, delimited by a tab 
+    cat(paste(fields[1],breaks,costout,sep="\t"),"\n") 
+  
+} 
+  
+close(input)
+###################################
+A Hive hql file then calls as u.R follow: 
+
+
+add jar walmart_gcia_tcs_hiveutils.jar;
+create temporary function arraytostring as ‘com.walmart.hive.util.ArrayToString’;
+add file u.R;
+add file change point_1.2.3.tar.gz;
+
+set hive.cli.print.header=true;
+
+select transform(a.pcu,arrytostring(a.retail_price))using ‘u.R’ as (pcu string, breaks string, data string) from (select  * from pemah1.mt_trans limit 20) a;
+#####################################
+There is one problem left: our R scrip ‘u.R’ assumes that the fields it’s receiving is a string. 
+——————————————————————————————————————————
+——————————————————————————————————————————
+————————————————IN WINDOWS————————————————————————
+——————————————————————————————————————————
+Go to the C directory and 
+mkdir toolbox
+cd toolbox
+mkdir Rlibs
+cd Rlibs
+————————
+Then go to control panel environment 
+variable name is “R_LIBS”
+and the address is C:\toolbox\Rlibs
+
