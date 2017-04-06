@@ -1,5 +1,7 @@
-Hive and R
-We assume here that R is installed on Unix. Our goal is to locally install a library in my profile under unix and apply it to each record of a Hive table. 
+Hive and R (UDF)
+We assume here that R is installed on Unix. Our goal is to locally install a library in my profile under unix and 
+apply it to each record of a Hive table. 
+The input to the R udf is string and the output are the change points. 
 Here is how you do:
 
 $mkdir changepoint
@@ -57,7 +59,11 @@ while (length(line <- readLines(input, n=1, warn=FALSE)) > 0) {
   
 close(input)
 ###################################
-A Hive hql file then calls as u.R follow: 
+
+
+
+
+A Hive hql file then calls u.R follow: 
 
 
 add jar walmart_gcia_tcs_hiveutils.jar;
@@ -69,8 +75,10 @@ set hive.cli.print.header=true;
 
 select transform(a.pcu,arrytostring(a.retail_price))using ‘u.R’ as (pcu string, breaks string, data string) from (select  * from pemah1.mt_trans limit 20) a;
 #####################################
+
+
+
 There is one problem left: our R scrip ‘u.R’ assumes that the fields it’s receiving is a string. 
-——————————————————————————————————————————
 ——————————————————————————————————————————
 ————————————————IN WINDOWS————————————————————————
 ——————————————————————————————————————————
